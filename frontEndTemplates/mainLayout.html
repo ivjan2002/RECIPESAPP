@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MainPage</title>
+    <style>
+        *{padding:0;margin:0;background-color:#1e211f;}
+        .intro{font-weight:bold;color:#19d144;}
+        .navbar {overflow: hidden;background-color: #333;position: fixed;bottom: 0; width: 100%;}
+        .navbar a {float: left;display: block;color:#19d144;text-align: center;padding: 14px 16px;text-decoration: none;transition:0.7s;}
+        .navbar a:hover{background-color:#19d144;color:#333;}
+        .intro-container { background-color: white; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; padding: 20px; text-align: center; box-sizing: border-box;margin-left:100px;margin-right:100px; }
+        .intro-container h1, .intro-container p {background-color:white;}
+        
+
+
+
+
+    </style>
+    
+</head>
+<body>
+    
+    <div class="intro-container">
+        <h1 class="intro">WELCOME TO RECIPES APP!</h1>
+        <br>
+        <p class="intro">The recipe application is a simple and intuitive platform that allows users to browse, add, and share recipes for their favorite dishes.</p>
+        <br>
+        <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+        <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+      
+    
+        <script src="ImageSlideShow.js"></script>
+       
+        <script>
+          ReactDOM.createRoot(document.getElementById("slideshow-root")).render(
+            React.createElement(window.ImageSlideShow)
+          );
+        </script>
+    </div>
+    
+    
+    <div class="navbar">
+        <a href="add_recipe.html">ADD RECIPE</a>
+        <a href="explore_recipe.html">EXPLORE RECIPES</a>
+        <a href="myrecipe.html">MY RECIPES</a>
+      </div>
+
+
+    
+</body>
+</html>
