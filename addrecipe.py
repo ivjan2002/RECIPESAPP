@@ -1,5 +1,5 @@
-from flask import Flask, jsonify, request
-from flask_sqlalchemy import SQLAlchemy
+from flask import Flask, jsonify, request # type: ignore
+from flask_sqlalchemy import SQLAlchemy # type: ignore
 
 app = Flask(__name__)
 
@@ -18,7 +18,7 @@ class Recipe(db.Model):
     recipe_description = db.Column(db.String(300), nullable=False)  
 
 
-@app.route('/add_recipe', methods=['POST'])
+@app.route('/', methods=['POST'])
 def add_recipe():
    
     name = request.form.get('name')

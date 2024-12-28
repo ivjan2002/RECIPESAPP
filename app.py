@@ -1,4 +1,4 @@
-from flask import Flask,jsonity
+from flask import Flask,jsonify
 from flask_sqlalchemy import SQLAlchemy
 
 app=Flask(__name__)
