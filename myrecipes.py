@@ -30,7 +30,7 @@ class Recipe(db.Model):
     # Spoljni ključ koji povezuje recept sa korisnikom
     user_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)
 
-@app.route('/recipes', methods=['GET'])
+@app.route('/myrecipes', methods=['GET'])
 def get_user_recipes():
     # Pretpostavljamo da je korisnik autentifikovan i da imamo ID korisnika (npr. iz JWT tokena ili sesije)
     user_id = request.args.get('user_id')  # Uzimamo ID korisnika iz URL parametra (može biti i iz headera ili tokena)

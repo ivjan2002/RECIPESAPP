@@ -1,14 +1,25 @@
 from flask import Flask, request, jsonify
 from werkzeug.security import generate_password_hash
+from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
 
-
+# Konfiguracija baze podataka
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:@localhost/recipesdatabase'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-db=SQLAlchemy(app)
+db = SQLAlchemy(app)
 
+# Model za korisnika
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    ime = db.Column(db.String(50), nullable=False)
+    prezime = db.Column(db.String(50), nullable=False)
+    username = db.Column(db.String(50), unique=True, nullable=False)
+    email = db.Column(db.String(50), unique=True, nullable=False)
+    sifra = db.Column(db.String(50), nullable=False)
+
+# Ruta za registraciju korisnika
 @app.route('/register', methods=['POST'])
 def register_user():
     # Preuzimanje podataka iz zahteva
@@ -28,23 +39,23 @@ def register_user():
         return jsonify({"message": "Šifre se ne podudaraju!"}), 400
 
     # Provera da li korisnik već postoji
-    if any(user['username'] == username or user['email'] == email for user in db):
+    existing_user = User.query.filter((User.username == username) | (User.email == email)).first()
+    if existing_user:
         return jsonify({"message": "Korisnik sa tim korisničkim imenom ili emailom već postoji!"}), 400
 
     # Hashovanje šifre
     hashed_password = generate_password_hash(sifra)
 
     # Kreiranje korisnika
-    new_user = {
-        "ime": ime,
-        "prezime": prezime,
-        "username": username,
-        "email": email,
-        "sifra": hashed_password
-    }
-    db.append(new_user)
+    new_user = User(ime=ime, prezime=prezime, username=username, email=email, sifra=hashed_password)
+    db.session.add(new_user)
+    db.session.commit()
 
     return jsonify({"message": "Korisnik uspešno registrovan!"}), 201
 
+# Pokretanje aplikacije
 if __name__ == '__main__':
+    # Kreiranje tabela (ako ne postoje)
+    with app.app_context():
+        db.create_all()
     app.run(debug=True)

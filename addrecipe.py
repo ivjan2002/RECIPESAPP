@@ -1,5 +1,5 @@
-from flask import Flask, jsonify, request # type: ignore
-from flask_sqlalchemy import SQLAlchemy # type: ignore
+from flask import Flask, jsonify, request
+from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
 
@@ -18,20 +18,19 @@ class Recipe(db.Model):
     recipe_description = db.Column(db.String(300), nullable=False)  
 
 
-@app.route('/', methods=['POST'])
+@app.route('/add_recipe', methods=['POST'])
 def add_recipe():
-   
-    name = request.form.get('name')
-    description = request.form.get('description')
+    data = request.get_json()  # koristiš request.get_json() za pristupanje JSON podacima
+    
+    name = data.get('name')
+    description = data.get('description')
 
     if not name or not description:
         return jsonify({"error": "Both name and description are required!"}), 400
 
-    
     new_recipe = Recipe(recipe_name=name, recipe_description=description)
 
     try:
-        
         db.session.add(new_recipe)
         db.session.commit()
 
@@ -39,6 +38,7 @@ def add_recipe():
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": f"An error occurred: {str(e)}"}), 500
+
 
 if __name__ == '__main__':
     app.run(debug=True)
