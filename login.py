@@ -4,11 +4,11 @@ import datetime
 from werkzeug.security import check_password_hash
 from flask_sqlalchemy import SQLAlchemy
 
-# Inicijalizacija Flask aplikacije
+
 app = Flask(__name__)
 
 # Konfiguracija baze podataka i tajni ključ
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://username:password@localhost/recipesdatabase'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:@localhost/recipesdatabase'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = 'your_secret_key_here'
 
@@ -16,9 +16,9 @@ db = SQLAlchemy(app)
 
 # Model korisnika
 class User(db.Model):
-    __tablename__ = 'users'
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(150), unique=True, nullable=False)
+    __tablename__ = 'user'
+    user_id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(50), unique=True, nullable=False)
     password = db.Column(db.String(200), nullable=False)
 
 # Funkcija za generisanje JWT tokena
