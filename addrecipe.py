@@ -20,7 +20,7 @@ class Recipe(db.Model):
 
 @app.route('/add_recipe', methods=['POST'])
 def add_recipe():
-    data = request.get_json()  # koristiš request.get_json() za pristupanje JSON podacima
+    data = request.get_json()  
     
     name = data.get('name')
     description = data.get('description')
