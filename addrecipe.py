@@ -1,13 +1,15 @@
 from flask import Flask, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
 from flask import render_template
-import os
+from models.model import db,Recipe,User
+
 
 app = Flask(__name__,template_folder=r'C:\Users\IVANA\recipesApp\frontEndTemplates')
 
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:@localhost/recipesdatabase'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
 
 db = SQLAlchemy(app)
 

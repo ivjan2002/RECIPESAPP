@@ -21,17 +21,17 @@
 <body>
     <H2>welcome to recipes app!</H2>
     <div class="form-login">
-        <form>
+        <form id="loginform" method="POST" action="/login">
             
-            <label>Enter your username:</label>
+            <label for="username">Enter your username:</label>
             <br>
-            <input type="text">
+            <input type="text" id="username" name="username" required>
             <br>
-            <label>Enter password:</label>
+            <label for="password">Enter password:</label>
             <br>
-            <input type="password">
+            <input type="password" id="password" name="password" required>
             <br>
-            <button>LOGIN</button>
+            <button type="submit">LOGIN</button>
             <br>
             <a href="register.html">Don't have an account?Register here</a>
         </form>
