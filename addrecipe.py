@@ -1,7 +1,9 @@
 from flask import Flask, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
+from flask import render_template
+import os
 
-app = Flask(__name__)
+app = Flask(__name__,template_folder=r'C:\Users\IVANA\recipesApp\frontEndTemplates')
 
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:@localhost/recipesdatabase'
@@ -18,12 +20,15 @@ class Recipe(db.Model):
     recipe_description = db.Column(db.String(300), nullable=False)  
 
 
+@app.route('/add')
+def index():
+    return render_template('add_recipe.html', message=None)
+
+
 @app.route('/add_recipe', methods=['POST'])
 def add_recipe():
-    data = request.get_json()  
-    
-    name = data.get('name')
-    description = data.get('description')
+    name = request.form.get('name')
+    description = request.form.get('description')
 
     if not name or not description:
         return jsonify({"error": "Both name and description are required!"}), 400

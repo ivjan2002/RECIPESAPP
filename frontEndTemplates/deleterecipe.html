@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AddRecipe</title>
+    <title>DeleteRecipe</title>
     <style>
         *{padding:0;margin:0;}
         .form-container { display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #f4f4f4; }
@@ -15,15 +15,41 @@
         
 
     </style>
+    <script>
+        
+        function deleteRecipe(event) {
+            event.preventDefault();  
+
+            const recipeName = document.getElementById('name').value;
+
+            
+            fetch('/delete_recipe', {
+                method: 'DELETE',  
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    name: recipeName
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message || data.error);  
+            })
+            .catch(error => {
+                console.error('Error:', error); 
+            });
+        }
+    </script>
 </head>
 <body>
     <div class="form-container">
-        <form>
-            <label>Enter recipe name:</label>
+        <form id="recipeDeleteForm" onsubmit="deleteRecipe(event)">
+            <label for="name">Enter recipe name:</label>
             <br>
-            <input type="text">
+            <input type="text" id="name" name="name" required>
             <br>
-            <button>Delete recipe</button>
+            <button type="submit">Delete recipe</button>
         </form>
     </div>
     

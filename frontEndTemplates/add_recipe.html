@@ -18,17 +18,19 @@
 </head>
 <body>
     <div class="form-container">
-        <form>
-            <label>Enter recipe name:</label>
+        <form id="recipeForm" method="POST" action="/add_recipe">
+            <label for="name">Enter recipe name:</label>
             <br>
-            <input type="text">
+            <input type="text" id="name" name="name" required>
             <br>
-            <label>Enter recipe description:</label>
+            <label for="description">Enter recipe description:</label>
             <br>
-            <textarea rows="9" cols="40" placeholder="Enter description here"></textarea>
+            <textarea id="description" name="description" rows="9" cols="40" placeholder="Enter description here" required></textarea>
             <br>
-            <button>Add recipe</button>
+            <button type="submit">Add recipe</button>
         </form>
+        
+        
     </div>
     
 </body>
