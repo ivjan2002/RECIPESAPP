@@ -14,21 +14,18 @@
     <h1>All recipes in one place!Enjoy</h1>
     <br>
     <table>
-        <tr>
-          <th>Recipe name</th>
-          <th>Recipe description</th>
-        </tr>
-        <tr>
-          <td></td>
-          <td></td>
-          
-        </tr>
-        <tr>
-          <td></td>
-          <td></td>
-          
-        </tr>
-      </table>
+      <tr>
+          <th>Recipe Name</th>
+          <th>Recipe Description</th>
+      </tr>
+      {% for recipe in recipes %}
+      <tr>
+          <td>{{ recipe.name }}</td>
+          <td>{{ recipe.description }}</td>
+      </tr>
+      {% endfor %}
+  </table>
+    
     
 </body>
 </html>

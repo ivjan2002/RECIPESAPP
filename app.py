@@ -1,7 +1,8 @@
 from flask import Flask,jsonify
 from flask_sqlalchemy import SQLAlchemy
+from flask import render_template
 
-app=Flask(__name__)
+app=Flask(__name__,template_folder=r'C:\Users\IVANA\recipesApp\frontEndTemplates')
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:@localhost/recipesdatabase'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -23,7 +24,8 @@ def get_recipes():
     
     recipes_list = [{'name': r.recipe_name, 'description': r.recipe_description} for r in recipes]
     
-    return jsonify(recipes_list)
+    #return jsonify(recipes_list)
+    return render_template('explore_recipe.html', recipes=recipes_list)
 
 if __name__ == '__main__':
     app.run(debug=True)
