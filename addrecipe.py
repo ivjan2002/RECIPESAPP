@@ -1,7 +1,6 @@
 from flask import Flask, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
 from flask import render_template
-from models.model import db,Recipe,User
 
 
 app = Flask(__name__,template_folder=r'C:\Users\IVANA\recipesApp\frontEndTemplates')
@@ -13,14 +12,14 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 
-
 class Recipe(db.Model):
     __tablename__ = 'recipes'
 
     id = db.Column(db.Integer, primary_key=True)
     recipe_name = db.Column(db.String(50), nullable=False)
-    recipe_description = db.Column(db.String(300), nullable=False)  
+    recipe_description = db.Column(db.String(300), nullable=False) 
 
+ 
 
 @app.route('/add')
 def index():

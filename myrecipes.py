@@ -1,54 +1,74 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, render_template
 from flask_sqlalchemy import SQLAlchemy
+import jwt
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder=r'C:\Users\IVANA\recipesApp\frontEndTemplates')
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:@localhost/recipesdatabase'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SECRET_KEY'] = 'your_secret_key_here'  # Dodaj svoj ključ ovde
 
 db = SQLAlchemy(app)
 
-# Model korisnika
 class User(db.Model):
-    __tablename__ = 'users'
-
     user_id = db.Column(db.Integer, primary_key=True)
+    First_name = db.Column(db.String(50), nullable=False)
+    Last_name = db.Column(db.String(50), nullable=False)
     username = db.Column(db.String(50), unique=True, nullable=False)
-    password = db.Column(db.String(200), nullable=False)  # Ne koristi plain text lozinke u stvarnim aplikacijama
+    password = db.Column(db.String(200), nullable=False)
+    email = db.Column(db.String(50), unique=True, nullable=False)
 
-    # Veza sa receptima
-    recipes = db.relationship('Recipe', backref='owner', lazy=True)
-
-# Model recepta
 class Recipe(db.Model):
     __tablename__ = 'recipes'
 
     recipe_id = db.Column(db.Integer, primary_key=True)
     recipe_name = db.Column(db.String(50), nullable=False)
     recipe_description = db.Column(db.String(300), nullable=False)
-    
-    # Spoljni ključ koji povezuje recept sa korisnikom
-    user_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.user_id'), nullable=False)
+
+    user = db.relationship('User', backref='recipes', lazy=True)
+
+def verify_token(token):
+    if not isinstance(token, str):
+        raise TypeError("Expected a string value for token")
+    try:
+        decoded_token = jwt.decode(token, app.config['SECRET_KEY'], algorithms=["HS256"])
+        return decoded_token['username']
+    except jwt.ExpiredSignatureError:
+        return None  # Token je istekao
+    except jwt.InvalidTokenError:
+        return None  # Nevažeći token
 
 @app.route('/myrecipes', methods=['GET'])
-def get_user_recipes():
-    # Pretpostavljamo da je korisnik autentifikovan i da imamo ID korisnika (npr. iz JWT tokena ili sesije)
-    user_id = request.args.get('user_id')  # Uzimamo ID korisnika iz URL parametra (može biti i iz headera ili tokena)
+def get_recipes():
+    token = request.headers.get('Authorization')
 
-    if not user_id:
-        return jsonify({"error": "User ID is required"}), 400
+    if not token:
+        return jsonify({"error": "Token is missing!"}), 400
 
-    # Pronalazi sve recepte tog korisnika
-    user_recipes = Recipe.query.filter_by(user_id=user_id).all()
+    # Ukloni "Bearer" i ostavi samo token
+    token = token.split(" ")[1] if " " in token else token
 
-    # Ako korisnik nema recepte
-    if not user_recipes:
-        return jsonify({"message": "No recipes found for this user."}), 404
+    # Verifikuj token i dobavi korisničko ime
+    username = verify_token(token)
 
-    # Kreiranje liste sa receptima korisnika
-    recipes_list = [{'name': r.recipe_name, 'description': r.recipe_description} for r in user_recipes]
+    if not username:
+        return jsonify({"error": "Invalid or expired token!"}), 401
 
-    return jsonify(recipes_list)
+    # Pronađi korisnika iz baze na osnovu korisničkog imena
+    user = User.query.filter_by(username=username).first()
+
+    if not user:
+        return jsonify({"error": "User not found!"}), 404
+
+    # Filtriraj recepte koji pripadaju trenutnom korisniku
+    recipes = Recipe.query.filter_by(user_id=user.user_id).all()
+
+    # Pripremi podatke za prikaz
+    recipes_list = [{'name': r.recipe_name, 'description': r.recipe_description} for r in recipes]
+
+    # Vrati recepte na HTML stranu
+    return render_template('myrecipe.html', recipes=recipes_list)
 
 if __name__ == '__main__':
     app.run(debug=True)

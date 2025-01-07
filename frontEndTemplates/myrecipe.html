@@ -52,20 +52,27 @@
 <body>
     <h1>All recipes in one place! Enjoy</h1>
     <br>
-    <table>
-        <tr>
-            <th>Recipe Name</th>
-            <th>Recipe Description</th>
-        </tr>
-        <tr>
-            <td>Spaghetti Carbonara</td>
-            <td>A classic Italian pasta dish.</td>
-        </tr>
-        <tr>
-            <td>Chocolate Cake</td>
-            <td>Rich and moist chocolate dessert.</td>
-        </tr>
+    <table></table>
+        <thead>
+            <tr>
+                <th>Recipe Name</th>
+                <th>Recipe Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for recipe in recipes %}
+                <tr>
+                    <td>{{ recipe.name }}</td>
+                    <td>{{ recipe.description }}</td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td>No recipes found!</td>
+                </tr>
+            {% endfor %}
+        </tbody>
     </table>
+    
     <div class="meni">
         <a href="add_recipe.html">ADD RECIPE</a>
         <a href="deleterecipe.html">DELETE RECIPE</a>

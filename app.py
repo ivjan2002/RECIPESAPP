@@ -1,6 +1,8 @@
 from flask import Flask,jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask import render_template
+from functools import wraps
+import jwt
 
 app=Flask(__name__,template_folder=r'C:\Users\IVANA\recipesApp\frontEndTemplates')
 
