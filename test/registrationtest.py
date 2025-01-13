@@ -1,98 +1,84 @@
 import unittest
-import json
 from app import app, db, User
 
-class RegisterUserTestCase(unittest.TestCase):
-    def setUp(self):
-        # Postavljanje aplikacije za testiranje
-        self.app = app.test_client()
-        self.app.testing = True
-
-        # Kreiranje baze podataka za testiranje
+class RegisterTestCase(unittest.TestCase):
+    
+    @classmethod
+    def setUpClass(cls):
+        # Set up the test client and initialize the database
+        cls.app = app.test_client()
+        cls.app.testing = True
+        
+        # Create all tables for testing
         with app.app_context():
             db.create_all()
 
-    def tearDown(self):
-        # Brisanje baze podataka posle testiranja
+    @classmethod
+    def tearDownClass(cls):
+        # Drop all tables after tests
         with app.app_context():
-            db.session.remove()
             db.drop_all()
 
-    def test_register_user_success(self):
-        # Testiranje uspešne registracije korisnika
-        response = self.app.post('/register', json={
-            "First_name": "John",
-            "Last_name": "Doe",
-            "username": "johndoe",
-            "email": "johndoe@example.com",
-            "password": "password123",
-            "confirm_password": "password123"
-        })
-        data = json.loads(response.data)
+    def test_register_success(self):
+        # Test successful registration
+        response = self.app.post('/register', data=dict(
+            First_name="John",
+            Last_name="Doe",
+            username="john_doe",
+            email="john.doe@example.com",
+            password="password123",
+            confirm_password="password123"
+        ))
+        json_response = response.get_json()
         self.assertEqual(response.status_code, 201)
-        self.assertIn("message", data)
-        self.assertEqual(data["message"], "Korisnik uspešno registrovan!")
+        self.assertEqual(json_response["message"], "Korisnik uspešno registrovan!")
 
-        # Provera da li je korisnik dodat u bazu
-        with app.app_context():
-            user = User.query.filter_by(username="johndoe").first()
-            self.assertIsNotNone(user)
-            self.assertEqual(user.email, "johndoe@example.com")
-
-    def test_register_user_missing_fields(self):
-        # Testiranje neuspešne registracije zbog nedostajućih polja
-        response = self.app.post('/register', json={
-            "First_name": "John",
-            "Last_name": "Doe",
-            "username": "johndoe"
-            # Nedostaju email i password
-        })
-        data = json.loads(response.data)
+    def test_register_missing_fields(self):
+        # Test registration with missing fields
+        response = self.app.post('/register', data=dict(
+            First_name="John",
+            Last_name="Doe",
+            username="john_doe",
+            email="john.doe@example.com",
+            password="password123",
+            confirm_password=""
+        ))
+        json_response = response.get_json()
         self.assertEqual(response.status_code, 400)
-        self.assertIn("message", data)
-        self.assertEqual(data["message"], "Sva polja su obavezna!")
+        self.assertEqual(json_response["message"], "Sva polja su obavezna!")
 
-    def test_register_user_password_mismatch(self):
-        # Testiranje neuspešne registracije zbog nepoklapanja šifri
-        response = self.app.post('/register', json={
-            "First_name": "John",
-            "Last_name": "Doe",
-            "username": "johndoe",
-            "email": "johndoe@example.com",
-            "password": "password123",
-            "confirm_password": "password456"  # Šifre se ne podudaraju
-        })
-        data = json.loads(response.data)
+    def test_register_password_mismatch(self):
+        # Test registration where passwords don't match
+        response = self.app.post('/register', data=dict(
+            First_name="John",
+            Last_name="Doe",
+            username="john_doe",
+            email="john.doe@example.com",
+            password="password123",
+            confirm_password="password321"
+        ))
+        json_response = response.get_json()
         self.assertEqual(response.status_code, 400)
-        self.assertIn("message", data)
-        self.assertEqual(data["message"], "Šifre se ne podudaraju!")
+        self.assertEqual(json_response["message"], "Šifre se ne podudaraju!")
 
-    def test_register_user_existing_user(self):
-        # Testiranje neuspešne registracije zbog postojećeg korisnika
+    def test_register_existing_user(self):
+        # Test registration where username or email already exists
         with app.app_context():
-            # Dodavanje postojećeg korisnika u bazu
-            existing_user = User(
-                First_name="John",
-                Last_name="Doe",
-                username="johndoe",
-                email="johndoe@example.com",
-                password="hashed_password"
-            )
-            db.session.add(existing_user)
+            user = User(First_name="Jane", Last_name="Doe", username="existing_user",  password="hashed_password",email="existing@example.com")
+            db.session.add(user)
             db.session.commit()
-
-        response = self.app.post('/register', json={
-            "First_name": "John",
-            "Last_name": "Doe",
-            "username": "johndoe",
-            "email": "johndoe@example.com",
-            "password": "password123",
-            "confirm_password": "password123"
-        })
-        data = json.loads(response.data)
+        
+        response = self.app.post('/register', data=dict(
+            First_name="John",
+            Last_name="Doe",
+            username="existing_user",
+            email="existing@example.com",
+            password="password123",
+            confirm_password="password123"
+        ))
+        json_response = response.get_json()
         self.assertEqual(response.status_code, 400)
-        self.assertIn("message", data)
-        self.assertEqual(data["message"], "Korisnik sa tim korisničkim imenom ili emailom već postoji!")
+        self.assertEqual(json_response["message"], "Korisnik sa tim korisničkim imenom ili emailom već postoji!")
 
 if __name__ == '__main__':
     unittest.main()

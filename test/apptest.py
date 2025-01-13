@@ -1,6 +1,6 @@
 import unittest
 import json
-from app import app, db, Recipe
+from deleterecipe import app, db, Recipe
 
 class GetRecipesTestCase(unittest.TestCase):
     def setUp(self):

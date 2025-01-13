@@ -6,7 +6,7 @@ app = Flask(__name__, template_folder=r'C:\Users\IVANA\recipesApp\frontEndTempla
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:@localhost/recipesdatabase'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SECRET_KEY'] = 'your_secret_key_here'  # Dodaj svoj ključ ovde
+app.config['SECRET_KEY'] = 'your_secret_key_here' 
 
 db = SQLAlchemy(app)
 
@@ -35,9 +35,9 @@ def verify_token(token):
         decoded_token = jwt.decode(token, app.config['SECRET_KEY'], algorithms=["HS256"])
         return decoded_token['username']
     except jwt.ExpiredSignatureError:
-        return None  # Token je istekao
+        return None 
     except jwt.InvalidTokenError:
-        return None  # Nevažeći token
+        return None  
 
 @app.route('/myrecipes', methods=['GET'])
 def get_recipes():
@@ -46,28 +46,27 @@ def get_recipes():
     if not token:
         return jsonify({"error": "Token is missing!"}), 400
 
-    # Ukloni "Bearer" i ostavi samo token
+   
     token = token.split(" ")[1] if " " in token else token
 
-    # Verifikuj token i dobavi korisničko ime
     username = verify_token(token)
 
     if not username:
         return jsonify({"error": "Invalid or expired token!"}), 401
 
-    # Pronađi korisnika iz baze na osnovu korisničkog imena
+    
     user = User.query.filter_by(username=username).first()
 
     if not user:
         return jsonify({"error": "User not found!"}), 404
 
-    # Filtriraj recepte koji pripadaju trenutnom korisniku
+    
     recipes = Recipe.query.filter_by(user_id=user.user_id).all()
 
-    # Pripremi podatke za prikaz
+    
     recipes_list = [{'name': r.recipe_name, 'description': r.recipe_description} for r in recipes]
 
-    # Vrati recepte na HTML stranu
+  
     return render_template('myrecipe.html', recipes=recipes_list)
 
 if __name__ == '__main__':

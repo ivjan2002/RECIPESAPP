@@ -1,60 +1,66 @@
 import unittest
-import json
 from app import app, db, User
 from werkzeug.security import generate_password_hash
 
 class LoginTestCase(unittest.TestCase):
-    def setUp(self):
-        # Postavljanje aplikacije za testiranje
-        self.app = app.test_client()
-        self.app.testing = True
+    
+    @classmethod
+    def setUpClass(cls):
+        # Konfiguracija za testiranje sa MySQL bazom
+        app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:@localhost/recipesdatabase'
+        app.config['TESTING'] = True
+        cls.client = app.test_client()
 
-        # Kreiranje baze podataka za testiranje
         with app.app_context():
-            db.create_all()
-
-        # Dodavanje testnog korisnika u bazu
-        test_user = User(
-            username='testuser',
-            password=generate_password_hash('testpassword')  # Kreiraj hashovane lozinke
-        )
-        with app.app_context():
-            db.session.add(test_user)
+            # Dodaj korisnika za testiranje
+            hashed_password = generate_password_hash("password123")
+            user = User(username="testuser", password=hashed_password)
+            db.session.add(user)
             db.session.commit()
 
-    def tearDown(self):
-        # Brisanje baze podataka posle testiranja
+    @classmethod
+    def tearDownClass(cls):
+        # Očisti korisnike nakon testova
         with app.app_context():
-            db.session.remove()
-            db.drop_all()
+            user = User.query.filter_by(username="testuser").first()
+            if user:
+                db.session.delete(user)
+                db.session.commit()
 
     def test_login_success(self):
-        # Testiranje uspešnog login-a
-        response = self.app.post('/login', json={
-            'username': 'testuser',
-            'password': 'testpassword'
-        })
-        data = json.loads(response.data)
+        # Testiranje uspešnog logina
+        response = self.client.post('/login', data=dict(
+            username="testuser",
+            password="password123"
+        ))
         self.assertEqual(response.status_code, 200)
-        self.assertIn('token', data)  # Očekuje se da token bude prisutan u odgovoru
+        data = response.get_json()
+        self.assertIn('token', data)
 
     def test_login_invalid_credentials(self):
-        # Testiranje neuspešnog login-a zbog loših kredencijala
-        response = self.app.post('/login', json={
-            'username': 'wronguser',
-            'password': 'wrongpassword'
-        })
-        data = json.loads(response.data)
+        # Testiranje neuspešnog logina sa lošim podacima
+        response = self.client.post('/login', data=dict(
+            username="testuser",
+            password="wrongpassword"
+        ))
         self.assertEqual(response.status_code, 401)
-        self.assertIn('error', data)
+        data = response.get_json()
         self.assertEqual(data['error'], 'Invalid username or password')
 
     def test_login_missing_fields(self):
-        # Testiranje neuspešnog login-a zbog nedostajućih polja
-        response = self.app.post('/login', json={})
-        data = json.loads(response.data)
+        # Testiranje greške kad nedostaju obavezna polja
+        response = self.client.post('/login', data=dict(
+            username="testuser"
+        ))
         self.assertEqual(response.status_code, 400)
-        self.assertIn('error', data)
+        data = response.get_json()
+        self.assertEqual(data['error'], 'Username and password are required')
+
+        response = self.client.post('/login', data=dict(
+            password="password123"
+        ))
+        self.assertEqual(response.status_code, 400)
+        data = response.get_json()
         self.assertEqual(data['error'], 'Username and password are required')
 
 if __name__ == '__main__':
