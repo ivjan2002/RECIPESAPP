@@ -1,84 +1,45 @@
 import unittest
-from app import app, db, User
+from app import app  # Importuj Flask aplikaciju
 
 class RegisterTestCase(unittest.TestCase):
-    
-    @classmethod
-    def setUpClass(cls):
-        # Set up the test client and initialize the database
-        cls.app = app.test_client()
-        cls.app.testing = True
-        
-        # Create all tables for testing
-        with app.app_context():
-            db.create_all()
 
-    @classmethod
-    def tearDownClass(cls):
-        # Drop all tables after tests
-        with app.app_context():
-            db.drop_all()
+    # Postavljanje testnog klijenta
+    def setUp(self):
+        self.client = app.test_client()  # Flask test klijent
 
+    # Testiranje uspešne registracije
     def test_register_success(self):
-        # Test successful registration
-        response = self.app.post('/register', data=dict(
-            First_name="John",
-            Last_name="Doe",
-            username="john_doe",
-            email="john.doe@example.com",
-            password="password123",
-            confirm_password="password123"
-        ))
-        json_response = response.get_json()
-        self.assertEqual(response.status_code, 201)
-        self.assertEqual(json_response["message"], "Korisnik uspešno registrovan!")
+        response = self.client.post('/register', data={
+            'username': 'new_user',
+            'password': 'new_password123'
+        })
+        self.assertEqual(response.status_code, 302)  # Očekujemo redirekciju
+        self.assertIn('User registered successfully', response.data.decode('utf-8'))
 
-    def test_register_missing_fields(self):
-        # Test registration with missing fields
-        response = self.app.post('/register', data=dict(
-            First_name="John",
-            Last_name="Doe",
-            username="john_doe",
-            email="john.doe@example.com",
-            password="password123",
-            confirm_password=""
-        ))
-        json_response = response.get_json()
-        self.assertEqual(response.status_code, 400)
-        self.assertEqual(json_response["message"], "Sva polja su obavezna!")
-
-    def test_register_password_mismatch(self):
-        # Test registration where passwords don't match
-        response = self.app.post('/register', data=dict(
-            First_name="John",
-            Last_name="Doe",
-            username="john_doe",
-            email="john.doe@example.com",
-            password="password123",
-            confirm_password="password321"
-        ))
-        json_response = response.get_json()
-        self.assertEqual(response.status_code, 400)
-        self.assertEqual(json_response["message"], "Šifre se ne podudaraju!")
-
+    # Testiranje već postojećeg korisnika
     def test_register_existing_user(self):
-        # Test registration where username or email already exists
-        with app.app_context():
-            user = User(First_name="Jane", Last_name="Doe", username="existing_user",  password="hashed_password",email="existing@example.com")
-            db.session.add(user)
-            db.session.commit()
+        # Registrujemo prvog korisnika
+        self.client.post('/register', data={
+            'username': 'existing_user',
+            'password': 'password123'
+        })
         
-        response = self.app.post('/register', data=dict(
-            First_name="John",
-            Last_name="Doe",
-            username="existing_user",
-            email="existing@example.com",
-            password="password123",
-            confirm_password="password123"
-        ))
-        json_response = response.get_json()
-        self.assertEqual(response.status_code, 400)
-        self.assertEqual(json_response["message"], "Korisnik sa tim korisničkim imenom ili emailom već postoji!")
+        # Pokušaj registracije sa istim korisničkim imenom
+        response = self.client.post('/register', data={
+            'username': 'existing_user',
+            'password': 'new_password123'
+        })
+        self.assertEqual(response.status_code, 302)  # Očekujemo redirekciju
+        self.assertIn('User already exists', response.data.decode('utf-8'))
+
+    # Testiranje nedostajućih polja
+    def test_register_missing_fields(self):
+        response = self.client.post('/register', data={
+            'username': 'incomplete_user'
+            # Nedostaje lozinka
+        })
+        self.assertEqual(response.status_code, 302)  # Očekujemo redirekciju
+        self.assertIn('Username and password are required', response.data.decode('utf-8'))
 
 if __name__ == '__main__':
     unittest.main()
