@@ -13,7 +13,10 @@ class User(db.Model):
 
 class Recipe(db.Model):
     __tablename__ = 'recipes'
-    id = db.Column(db.Integer, primary_key=True)
+    recipe_id = db.Column(db.Integer, primary_key=True)
     recipe_name = db.Column(db.String(50), nullable=False)
     recipe_description = db.Column(db.String(300), nullable=False) 
+    user_id = db.Column(db.Integer, db.ForeignKey('user.user_id'), nullable=False)
+
+    user = db.relationship('User', backref='recipes', lazy=True)
 
